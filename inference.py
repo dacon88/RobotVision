@@ -1,7 +1,7 @@
 import cv2
 
 
-#TODO: handle commented lines
+# TODO: handle commented lines
 #cv2.namedWindow("preview")
 #vc = cv2.VideoCapture(0)
 
