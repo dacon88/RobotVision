@@ -130,3 +130,7 @@ dmypy.json
 
 #Pycharm config dir
 .idea/
+
+#Project related files
+dog.jpg
+imagenet_classes.txt
