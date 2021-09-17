@@ -1,8 +1,0 @@
-dataset used: https://data.mendeley.com/datasets/3n2vh9rdxd/1
-citation: Pasquale, Giulia; Ciliberto, Carlo; Odone, Francesca; Rosasco, Lorenzo; Natale, Lorenzo (2016), “iCubWorld28 - 128x128”, Mendeley Data, V1, doi: 10.17632/3n2vh9rdxd.1
-
-which dataset use? icub7? or 28?
-https://robotology.github.io/iCubWorld/#icubworld-hello-modal
-the link above should be icub7
-
-The idea is to get the weights of the original AlexNet, to use as starting point for the training with the icub dataset.
