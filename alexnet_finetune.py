@@ -97,7 +97,6 @@ class AlexnetFinetune:
 
         self.val_acc_history = []
 
-
     def train_model(self, is_inception=False):
         since = time.time()
 
