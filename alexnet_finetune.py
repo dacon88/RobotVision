@@ -95,10 +95,11 @@ class AlexnetFinetune:
         # Setup the loss fxn
         self.criterion = nn.CrossEntropyLoss()
 
+        self.val_acc_history = []
+
+
     def train_model(self, is_inception=False):
         since = time.time()
-
-        val_acc_history = []
 
         best_model_wts = copy.deepcopy(self.model.state_dict())
         best_acc = 0.0
@@ -118,12 +119,12 @@ class AlexnetFinetune:
                 running_corrects = 0
 
                 # Iterate over data.
-                for inputs, labels in self.dataloaders[phase]:
+                for inputs, labels in self.dataloaders_dict[phase]:
                     inputs = inputs.to(self.device)
                     labels = labels.to(self.device)
 
                     # zero the parameter gradients
-                    self.optimizer.zero_grad()
+                    self.optimizer_ft.zero_grad()
 
                     # forward
                     # track history if only in train
@@ -147,14 +148,14 @@ class AlexnetFinetune:
                         # backward + optimize only if in training phase
                         if phase == 'train':
                             loss.backward()
-                            self.optimizer.step()
+                            self.optimizer_ft.step()
 
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
 
-                epoch_loss = running_loss / len(self.dataloaders[phase].dataset)
-                epoch_acc = running_corrects.double() / len(self.dataloaders[phase].dataset)
+                epoch_loss = running_loss / len(self.dataloaders_dict[phase].dataset)
+                epoch_acc = running_corrects.double() / len(self.dataloaders_dict[phase].dataset)
 
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -163,7 +164,7 @@ class AlexnetFinetune:
                     best_acc = epoch_acc
                     best_model_wts = copy.deepcopy(self.model.state_dict())
                 if phase == 'val':
-                    val_acc_history.append(epoch_acc)
+                    self.val_acc_history.append(epoch_acc)
 
             print()
 
@@ -173,4 +174,3 @@ class AlexnetFinetune:
 
         # load best model weights
         self.model.load_state_dict(best_model_wts)
-        return val_acc_history
