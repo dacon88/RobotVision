@@ -19,13 +19,19 @@ import time
 def main():
     #Load model
     print("inference")
-    #path_img = "phone.jpg"
+    path_img = "spray.ppm"
     nn = AlexnetFinetune()
     nn.model.load_state_dict(torch.load("state_dict_model_1.pt", map_location=torch.device('cpu')))
     nn.model.eval()
 
+    #image = Image.open(path_img)
+    #x = nn.predict_image(image)
+    #print(x)
 
-
+    x1 = 384
+    y1 = 104
+    x2 = 896
+    y2 = 616
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)
 
@@ -35,17 +41,18 @@ def main():
         rval = False
 
     while rval:
-        time.sleep(0.1)
-        im = frame[104:616, 384:896]    #1280:720   #crop img y1,y2 x1,x2
-        #im = frame
-        im = Image.fromarray(np.uint8(im)).convert('RGB')
+        im = frame[y1:y2, x1:x2]
 
+        cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        im = Image.fromarray(im)
+
+        im.show()
         x = nn.predict_image(im)
         print(x)
         response = x
 
-        cv2.rectangle(frame, (384, 104), (896, 616), (255, 0, 0), 2)
-        cv2.putText(frame, response, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), lineType=cv2.LINE_AA)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        cv2.putText(frame, response, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), lineType=cv2.LINE_AA)
         cv2.imshow("preview", frame)
         rval, frame = vc.read()
         key = cv2.waitKey(20)
