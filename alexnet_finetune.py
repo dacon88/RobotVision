@@ -175,9 +175,9 @@ class AlexnetFinetune:
         # load best model weights
         self.model.load_state_dict(best_model_wts)
 
-    def predict_image(self, image_path):
-        print("prediciton in progress")
-        image = Image.open(image_path)
+    def predict_image(self, frame):
+        #print("prediciton in progress")
+        image = frame
 
         transformation = self.data_transforms["val"]
 
@@ -189,7 +189,7 @@ class AlexnetFinetune:
             self.model.to('cuda')
 
         classes = self.dataloaders_dict['train'].dataset.classes
-        print(classes)
+        #print(classes)
 
         with torch.no_grad():
             output = self.model(image_tensor)
@@ -201,7 +201,8 @@ class AlexnetFinetune:
         probabilities = probabilities.numpy()
 
         index = probabilities.argmax()
-        message = classes[index] + " " + str(probabilities[index]*100.) + " %"
-        print(message)
+        prob_percentage = round((probabilities[index]*100.), 2)
+        message = classes[index] + " " + str(prob_percentage) + " %"
+        #print(message)
 
-        return index
+        return message
