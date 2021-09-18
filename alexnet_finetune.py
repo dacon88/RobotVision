@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torchvision import datasets, transforms
+from PIL import Image
 
 
 class AlexnetFinetune:
@@ -65,10 +66,10 @@ class AlexnetFinetune:
         # Detect if we have a GPU available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        model = torchvision.models.alexnet(pretrained=False, num_classes=self.num_classes)
+        self.model = torchvision.models.alexnet(pretrained=False, num_classes=self.num_classes)
 
         # Send the model to GPU
-        self.model = model.to(self.device)
+        self.model = self.model.to(self.device)
 
         # Gather the parameters to be optimized/updated in this run. If we are
         #  finetuning we will be updating all parameters. However, if we are
@@ -173,3 +174,35 @@ class AlexnetFinetune:
 
         # load best model weights
         self.model.load_state_dict(best_model_wts)
+
+    def predict_image(self, image_path):
+        print("prediciton in progress")
+        image = Image.open(image_path)
+
+        transformation = self.data_transforms["val"]
+
+        image_tensor = transformation(image)
+        image_tensor = image_tensor.unsqueeze_(0)
+
+        if torch.cuda.is_available():
+            image_tensor = image_tensor.to('cuda')
+            self.model.to('cuda')
+
+        classes = self.dataloaders_dict['train'].dataset.classes
+        print(classes)
+
+        with torch.no_grad():
+            output = self.model(image_tensor)
+        # Tensor of shape 1000, with confidence scores over Imagenet's 1000 classes
+        # print(output[0])
+        # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
+        probabilities = torch.nn.functional.softmax(output[0], dim=0)
+
+        probabilities = probabilities.numpy()
+
+        index = probabilities.argmax()
+        message = classes[index] + " " + str(probabilities[index]*100.) + " %"
+        print(message)
+
+
+        return index
