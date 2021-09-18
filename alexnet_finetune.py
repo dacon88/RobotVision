@@ -204,5 +204,4 @@ class AlexnetFinetune:
         message = classes[index] + " " + str(probabilities[index]*100.) + " %"
         print(message)
 
-
         return index
