@@ -17,9 +17,17 @@ def main():
 
     nn.get_classes_names_from_csv("classes_names.csv")
 
+    # predict single img
+    single_img = "test_img/cans.ppm"
+    im = Image.open(single_img)
+    prediction = nn.predict_image(im)
+    print(prediction)
+
     # get img data from webcam
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)
+    vc.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    vc.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     if vc.isOpened():  # try to get the first frame
         rval, frame = vc.read()
     else:
@@ -29,13 +37,12 @@ def main():
 
     # Predict on the fly images
     while rval:
-
         img_bgr = frame
 
         # process camera img
         # resize
         new_resize_dim = (160, 160)
-        img_bgr = cv2.resize(img_bgr, new_resize_dim, interpolation=cv2.INTER_AREA)
+        # img_bgr = cv2.resize(img_bgr, new_resize_dim, interpolation=cv2.INTER_AREA)
 
         # write img to disk for debugging
         # cv2.imwrite("cv2.jpg", img_bgr)
