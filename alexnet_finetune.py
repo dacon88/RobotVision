@@ -28,7 +28,7 @@ class AlexnetFinetune:
         self.fine_tuned = False
 
         # TODO: inspect what input size does. it should be the size of the data
-        self.input_size = 80
+        self.input_size = 140
 
         # Data augmentation and normalization for training
         # Just normalization for validation
