@@ -20,7 +20,8 @@ class AlexnetFinetune:
     def __init__(self):
         # Top level data directory. Here we assume the format of the directory conforms
         #   to the ImageFolder structure
-        self.data_dir = "/home/davide/university/iCubWorld"
+        #TODO: if dataset not present, it give an error. fix it
+        self.data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
 
         # Number of classes in the dataset
         self.num_classes = 10

@@ -1,61 +1,51 @@
-import cv2
+"""
+inference application opens the webcam and predicts the obj based on the Alexnet NN finetuned
+"""
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision
-
-from torchvision import datasets, transforms
 from alexnet_finetune import AlexnetFinetune
 from PIL import Image
-import numpy as np
-from matplotlib import cm
-import time
-
-
-
+import cv2
 
 
 def main():
+
     #Load model
-    print("inference")
-    path_img = "lemon.ppm"
     nn = AlexnetFinetune()
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
 
-    image = Image.open(path_img)
-    x = nn.predict_image(image)
-    print(x)
-
+    # pixel coord for cropping the webcam img
     x1 = 384
     y1 = 104
+
     x2 = 896
     y2 = 616
+
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)
 
-    if vc.isOpened(): # try to get the first frame
+    if vc.isOpened():  # try to get the first frame
         rval, frame = vc.read()
     else:
         rval = False
 
     while rval:
         #TODO: fix this variable horible thing
-        im = frame
+        img_bgr = frame
         #TODO: maybe crop on purpose
-        #im = frame[y1:y2, x1:x2]
+        #img_rgb = frame[y1:y2, x1:x2]
 
         #cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         dim = (160, 160)
-        im = cv2.resize(im, dim, interpolation=cv2.INTER_AREA)
-        cv2.imwrite("cv2.jpg", im)
-        im = Image.fromarray(im)
-        R, G, B = im.split()
+        img_bgr = cv2.resize(img_bgr, dim, interpolation=cv2.INTER_AREA)
+        cv2.imwrite("cv2.jpg", img_bgr)
+        im_PIL = Image.fromarray(img_bgr)
+        R, G, B = im_PIL.split()
 
         im_rgb = Image.merge("RGB", (B, G, R))
         # im.show()
-        im1 = im_rgb.save("geeks.jpg")
+        im1 = im_rgb.save("input_rgb.jpg")
 
         x = nn.predict_image(im_rgb)
         print(x)
