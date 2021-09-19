@@ -28,7 +28,7 @@ class AlexnetFinetune:
         self.fine_tuned = False
 
         # TODO: inspect what input size does. it should be the size of the data
-        self.input_size = 160
+        self.input_size = 80
 
         # Data augmentation and normalization for training
         # Just normalization for validation
@@ -56,7 +56,7 @@ class AlexnetFinetune:
         # Top level data directory. Here we assume the format of the directory conforms
         #   to the ImageFolder structure
         # TODO: if dataset not present, it give an error. fix it
-        data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
+        data_dir = "/home/davide/university/iCubWorld"
 
         # Batch size for training (change depending on how much memory you have)
         batch_size = 8
@@ -234,7 +234,7 @@ class AlexnetFinetune:
 
         index = probabilities.argmax()
         prob_percentage = round((probabilities[index]*100.), 4)
-        message = self.classes_names[index] + " " + str(prob_percentage) + " %"
+        message = self.classes_names[0][index] + " " + str(prob_percentage) + " %"
         #print(message)
 
         return message
