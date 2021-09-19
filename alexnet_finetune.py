@@ -51,28 +51,13 @@ class AlexnetFinetune:
 
 
 
-    def train_model(self, is_inception=False):
+    def train_model(self, dataset_dir, batch_size, num_epochs, feature_extract, is_inception=False):
 
-        # Top level data directory. Here we assume the format of the directory conforms
-        #   to the ImageFolder structure
-        # TODO: if dataset not present, it give an error. fix it
-        data_dir = "/home/davide/university/iCubWorld"
-
-        # Batch size for training (change depending on how much memory you have)
-        batch_size = 8
-
-        # Number of epochs to train for
-        num_epochs = 15
-
-
-        # Flag for feature extracting. When False, we finetune the whole model,
-        #   when True we only update the reshaped layer params
-        feature_extract = False
 
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
-        image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), self.data_transforms[x]) for x in
+        image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_dir, x), self.data_transforms[x]) for x in
                                ['train', 'val']}
         # Create training and validation dataloaders
         dataloaders_dict = {
@@ -206,7 +191,7 @@ class AlexnetFinetune:
 
     def save_nn_state(self, state_path):
         torch.save(self.model.state_dict(), state_path)
-        print("Network weights save in: {0}".format(state_path))
+        print("Network weights saved in: {0}".format(state_path))
 
     def predict_image(self, image):
 

@@ -9,6 +9,7 @@ import cv2
 
 
 def main():
+    # TODO: handle input with argparse
 
     print("Load model")
     nn = AlexnetFinetune()
@@ -18,7 +19,7 @@ def main():
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # predict single img
-    single_img = "test_img/cans.ppm"
+    single_img = "test_img/pepper.ppm"
     im = Image.open(single_img)
     prediction = nn.predict_image(im)
     print(prediction)
@@ -41,7 +42,7 @@ def main():
 
         # process camera img
         # resize
-        new_resize_dim = (160, 160)
+        # new_resize_dim = (160, 160)
         # img_bgr = cv2.resize(img_bgr, new_resize_dim, interpolation=cv2.INTER_AREA)
 
         # write img to disk for debugging
@@ -53,7 +54,7 @@ def main():
         im_rgb = Image.merge("RGB", (B, G, R))
 
         # write img to disk for debugging
-        img_to_disk = im_rgb.save("PIL_input_rgb.jpg")
+        im_rgb.save("PIL_input_rgb.jpg")
 
         x = nn.predict_image(im_rgb)
         # print(x)
