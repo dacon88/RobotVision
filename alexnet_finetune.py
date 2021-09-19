@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torchvision import datasets, transforms
-from PIL import Image
 
 
 class AlexnetFinetune:
@@ -23,7 +22,8 @@ class AlexnetFinetune:
         #TODO: if dataset not present, it give an error. fix it
         self.data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
 
-        # Number of classes in the dataset
+        # Number of classes in the dataset.
+        # it corresponds to num of output of last layer
         self.num_classes = 10
 
         # Batch size for training (change depending on how much memory you have)
@@ -78,7 +78,7 @@ class AlexnetFinetune:
         #  that we have just initialized, i.e. the parameters with requires_grad
         #  is True.
         self.params_to_update = self.model.parameters()
-        print("Params to learn:")
+        # print("Params to learn:")
         if self.feature_extract:
             self.params_to_update = []
             for name, param in self.model.named_parameters():
@@ -180,9 +180,7 @@ class AlexnetFinetune:
         torch.save(self.model.state_dict(), state_path)
         print("Network weights save in: {0}".format(state_path))
 
-    def predict_image(self, frame):
-        #print("prediciton in progress")
-        image = frame
+    def predict_image(self, image):
 
         transformation = self.data_transforms["val"]
 
@@ -201,7 +199,7 @@ class AlexnetFinetune:
         # Tensor of shape 1000, with confidence scores over Imagenet's 1000 classes
         # print(output[0])
         # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
-        #TODO: output is sent to cpu, make it nicer
+        # output is sent to cpu for statistic analysis
         output = output.cpu()
         probabilities = torch.nn.functional.softmax(output[0], dim=0)
 
