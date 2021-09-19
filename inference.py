@@ -15,6 +15,8 @@ def main():
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
 
+    nn.classes_names = nn.get_classes_names_from_csv("classes_names.csv")
+
     # get img data from webcam
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)

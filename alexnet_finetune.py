@@ -6,6 +6,7 @@ Code takes inspiration from: https://pytorch.org/tutorials/beginner/finetuning_t
 import time
 import os
 import copy
+import csv
 
 import torch
 import torch.nn as nn
@@ -17,24 +18,15 @@ from torchvision import datasets, transforms
 class AlexnetFinetune:
 
     def __init__(self):
-        # Top level data directory. Here we assume the format of the directory conforms
-        #   to the ImageFolder structure
-        #TODO: if dataset not present, it give an error. fix it
-        self.data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
 
         # Number of classes in the dataset.
         # it corresponds to num of output of last layer
         self.num_classes = 10
 
-        # Batch size for training (change depending on how much memory you have)
-        self.batch_size = 8
+        self.model = torchvision.models.alexnet(pretrained=False, num_classes=self.num_classes)
 
-        # Number of epochs to train for
-        self.num_epochs = 15
+        self.fine_tuned = False
 
-        # Flag for feature extracting. When False, we finetune the whole model,
-        #   when True we only update the reshaped layer params
-        self.feature_extract = False
         # TODO: inspect what input size does. it should be the size of the data
         self.input_size = 160
 
@@ -55,58 +47,79 @@ class AlexnetFinetune:
             ]),
         }
 
+        self.classes_names = ()
+
+
+
+    def train_model(self, is_inception=False):
+
+        # Top level data directory. Here we assume the format of the directory conforms
+        #   to the ImageFolder structure
+        # TODO: if dataset not present, it give an error. fix it
+        data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
+
+        # Batch size for training (change depending on how much memory you have)
+        batch_size = 8
+
+        # Number of epochs to train for
+        num_epochs = 15
+
+
+        # Flag for feature extracting. When False, we finetune the whole model,
+        #   when True we only update the reshaped layer params
+        feature_extract = False
+
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
-        self.image_datasets = {x: datasets.ImageFolder(os.path.join(self.data_dir, x), self.data_transforms[x]) for x in ['train', 'val']}
+        image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), self.data_transforms[x]) for x in
+                               ['train', 'val']}
         # Create training and validation dataloaders
-        self.dataloaders_dict = {
-        x: torch.utils.data.DataLoader(self.image_datasets[x], batch_size=self.batch_size, shuffle=True, num_workers=4) for x in
-        ['train', 'val']}
+        dataloaders_dict = {
+            x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True,
+                                           num_workers=4) for x in
+            ['train', 'val']}
 
         # Detect if we have a GPU available
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        self.model = torchvision.models.alexnet(pretrained=False, num_classes=self.num_classes)
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Send the model to GPU
-        self.model = self.model.to(self.device)
+        self.model = self.model.to(device)
 
         # Gather the parameters to be optimized/updated in this run. If we are
         #  finetuning we will be updating all parameters. However, if we are
         #  doing feature extract method, we will only update the parameters
         #  that we have just initialized, i.e. the parameters with requires_grad
         #  is True.
-        self.params_to_update = self.model.parameters()
+        params_to_update = self.model.parameters()
         # print("Params to learn:")
-        if self.feature_extract:
-            self.params_to_update = []
+        if feature_extract:
+            params_to_update = []
             for name, param in self.model.named_parameters():
                 if param.requires_grad == True:
-                    self.params_to_update.append(param)
+                    params_to_update.append(param)
                     print("\t", name)
         else:
             for name, param in self.model.named_parameters():
                 if param.requires_grad == True:
                     print("\t", name)
 
-        #TODO: take a look at the finetune parameters
+        # TODO: take a look at the finetune parameters
         # Observe that all parameters are being optimized
-        self.optimizer_ft = optim.SGD(self.params_to_update, lr=0.001, momentum=0.9)
+        optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
 
         # Setup the loss fxn
-        self.criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss()
 
-        self.val_acc_history = []
+        val_acc_history = []
 
-    def train_model(self, is_inception=False):
         since = time.time()
 
         best_model_wts = copy.deepcopy(self.model.state_dict())
         best_acc = 0.0
 
-        for epoch in range(self.num_epochs):
-            print('Epoch {}/{}'.format(epoch, self.num_epochs - 1))
+        for epoch in range(num_epochs):
+            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
             print('-' * 10)
 
             # Each epoch has a training and validation phase
@@ -120,12 +133,12 @@ class AlexnetFinetune:
                 running_corrects = 0
 
                 # Iterate over data.
-                for inputs, labels in self.dataloaders_dict[phase]:
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
+                for inputs, labels in dataloaders_dict[phase]:
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
 
                     # zero the parameter gradients
-                    self.optimizer_ft.zero_grad()
+                    optimizer_ft.zero_grad()
 
                     # forward
                     # track history if only in train
@@ -137,26 +150,26 @@ class AlexnetFinetune:
                         if is_inception and phase == 'train':
                             # From https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
                             outputs, aux_outputs = self.model(inputs)
-                            loss1 = self.criterion(outputs, labels)
-                            loss2 = self.criterion(aux_outputs, labels)
+                            loss1 = criterion(outputs, labels)
+                            loss2 = criterion(aux_outputs, labels)
                             loss = loss1 + 0.4*loss2
                         else:
                             outputs = self.model(inputs)
-                            loss = self.criterion(outputs, labels)
+                            loss = criterion(outputs, labels)
 
                         _, preds = torch.max(outputs, 1)
 
                         # backward + optimize only if in training phase
                         if phase == 'train':
                             loss.backward()
-                            self.optimizer_ft.step()
+                            optimizer_ft.step()
 
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
 
-                epoch_loss = running_loss / len(self.dataloaders_dict[phase].dataset)
-                epoch_acc = running_corrects.double() / len(self.dataloaders_dict[phase].dataset)
+                epoch_loss = running_loss / len(dataloaders_dict[phase].dataset)
+                epoch_acc = running_corrects.double() / len(dataloaders_dict[phase].dataset)
 
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -165,7 +178,7 @@ class AlexnetFinetune:
                     best_acc = epoch_acc
                     best_model_wts = copy.deepcopy(self.model.state_dict())
                 if phase == 'val':
-                    self.val_acc_history.append(epoch_acc)
+                    val_acc_history.append(epoch_acc)
 
             print()
 
@@ -175,6 +188,21 @@ class AlexnetFinetune:
 
         # load best model weights
         self.model.load_state_dict(best_model_wts)
+
+        self.classes_names = dataloaders_dict['train'].dataset.classes
+        self.export_classes(file_name="classes_names.csv")
+
+        self.fine_tuned = True
+
+    def export_classes(self, file_name):
+        with open(file_name, 'w') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            wr.writerow(self.classes_names)
+
+    def get_classes_names_from_csv(self, filename):
+        with open(filename, newline='') as f:
+            reader = csv.reader(f)
+            self.classes_names = list(reader)
 
     def save_nn_state(self, state_path):
         torch.save(self.model.state_dict(), state_path)
@@ -191,7 +219,6 @@ class AlexnetFinetune:
             image_tensor = image_tensor.to('cuda')
             self.model.to('cuda')
 
-        classes = self.dataloaders_dict['train'].dataset.classes
         #print(classes)
 
         with torch.no_grad():
@@ -207,7 +234,7 @@ class AlexnetFinetune:
 
         index = probabilities.argmax()
         prob_percentage = round((probabilities[index]*100.), 4)
-        message = classes[index] + " " + str(prob_percentage) + " %"
+        message = self.classes_names[index] + " " + str(prob_percentage) + " %"
         #print(message)
 
         return message
