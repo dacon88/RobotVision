@@ -49,11 +49,7 @@ class AlexnetFinetune:
 
         self.classes_names = ()
 
-
-
     def train_model(self, dataset_dir, batch_size, num_epochs, feature_extract, is_inception=False):
-
-
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
@@ -183,6 +179,7 @@ class AlexnetFinetune:
         with open(file_name, 'w') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             wr.writerow(self.classes_names)
+            print("created {0} containing class labels".format(file_name))
 
     def get_classes_names_from_csv(self, filename):
         with open(filename, newline='') as f:
@@ -208,15 +205,15 @@ class AlexnetFinetune:
 
         with torch.no_grad():
             output = self.model(image_tensor)
-        # Tensor of shape 1000, with confidence scores over Imagenet's 1000 classes
         # print(output[0])
-        # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
         # output is sent to cpu for statistic analysis
         output = output.cpu()
+        # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
         probabilities = torch.nn.functional.softmax(output[0], dim=0)
 
         probabilities = probabilities.numpy()
 
+        # index has highest probability
         index = probabilities.argmax()
         prob_percentage = round((probabilities[index]*100.), 4)
         message = self.classes_names[0][index] + " " + str(prob_percentage) + " %"
