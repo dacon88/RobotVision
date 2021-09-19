@@ -176,6 +176,10 @@ class AlexnetFinetune:
         # load best model weights
         self.model.load_state_dict(best_model_wts)
 
+    def save_nn_state(self, state_path):
+        torch.save(self.model.state_dict(), state_path)
+        print("Network weights save in: {0}".format(state_path))
+
     def predict_image(self, frame):
         #print("prediciton in progress")
         image = frame

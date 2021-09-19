@@ -8,15 +8,16 @@ import torch
 
 
 def main():
-    alexnet_finetune = AlexnetFinetune()
 
-    alexnet_finetune.train_model()
+    # TODO: parse argument to script?
+    state_file_name = "state_dict_model.pt"
 
-    # Specify a path
-    PATH = "state_dict_model.pt"
-    #TODO: transform save into method
-    # Save
-    torch.save(alexnet_finetune.model.state_dict(), PATH)
+    # Initialize network
+    alexnet_ft = AlexnetFinetune()
+
+    alexnet_ft.train_model()
+    alexnet_ft.save_nn_state(state_file_name)
+
 
 if __name__ == "__main__":
     main()
