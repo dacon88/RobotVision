@@ -20,10 +20,10 @@ class AlexnetFinetune:
     def __init__(self):
         # Top level data directory. Here we assume the format of the directory conforms
         #   to the ImageFolder structure
-        self.data_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld1.0/human"
+        self.data_dir = "/home/davide/university/iCubWorld"
 
         # Number of classes in the dataset
-        self.num_classes = 7
+        self.num_classes = 10
 
         # Batch size for training (change depending on how much memory you have)
         self.batch_size = 8
@@ -35,7 +35,7 @@ class AlexnetFinetune:
         #   when True we only update the reshaped layer params
         self.feature_extract = False
         # TODO: inspect what input size does. it should be the size of the data
-        self.input_size = 128
+        self.input_size = 160
 
         # Data augmentation and normalization for training
         # Just normalization for validation
@@ -196,12 +196,14 @@ class AlexnetFinetune:
         # Tensor of shape 1000, with confidence scores over Imagenet's 1000 classes
         # print(output[0])
         # The output has unnormalized scores. To get probabilities, you can run a softmax on it.
+        #TODO: output is sent to cpu, make it nicer
+        output = output.cpu()
         probabilities = torch.nn.functional.softmax(output[0], dim=0)
 
         probabilities = probabilities.numpy()
 
         index = probabilities.argmax()
-        prob_percentage = round((probabilities[index]*100.), 2)
+        prob_percentage = round((probabilities[index]*100.), 4)
         message = classes[index] + " " + str(prob_percentage) + " %"
         #print(message)
 
