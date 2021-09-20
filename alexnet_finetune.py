@@ -17,7 +17,7 @@ from torchvision import datasets, transforms
 
 class AlexnetFinetune:
 
-    def __init__(self):
+    def __init__(self, img_size):
 
         # Number of classes in the dataset.
         # it corresponds to num of output of last layer
@@ -28,7 +28,7 @@ class AlexnetFinetune:
         self.fine_tuned = False
 
         # TODO: inspect what input size does. it should be the size of the data
-        self.input_size = 140
+        self.input_size = int(img_size * 0.7)
 
         # Data augmentation and normalization for training
         # Just normalization for validation
@@ -49,7 +49,7 @@ class AlexnetFinetune:
 
         self.classes_names = ()
 
-    def train_model(self, dataset_dir, batch_size, num_epochs, feature_extract):
+    def train_model(self, dataset_dir, batch_size, num_epochs):
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
@@ -67,23 +67,12 @@ class AlexnetFinetune:
         # Send the model to GPU
         self.model = self.model.to(device)
 
-        # Gather the parameters to be optimized/updated in this run. If we are
-        #  finetuning we will be updating all parameters. However, if we are
-        #  doing feature extract method, we will only update the parameters
-        #  that we have just initialized, i.e. the parameters with requires_grad
-        #  is True.
+        # Gather the parameters to be optimized/updated in this run.
         params_to_update = self.model.parameters()
         # print("Params to learn:")
-        if feature_extract:
-            params_to_update = []
-            for name, param in self.model.named_parameters():
-                if param.requires_grad == True:
-                    params_to_update.append(param)
-                    print("\t", name)
-        else:
-            for name, param in self.model.named_parameters():
-                if param.requires_grad == True:
-                    print("\t", name)
+        for name, param in self.model.named_parameters():
+            if param.requires_grad is True:
+                print("\t", name)
 
         # TODO: take a look at the finetune parameters
         # Observe that all parameters are being optimized

@@ -1,5 +1,5 @@
 """
-inference application opens the webcam and predicts the obj based on the Alexnet NN finetuned
+inference application opens the web-cam and predicts the obj based on the Alexnet NN finetuned
 """
 
 import torch
@@ -12,7 +12,8 @@ def main():
     # TODO: handle input with argparse
 
     print("Load model")
-    nn = AlexnetFinetune()
+    img_size = 160
+    nn = AlexnetFinetune(img_size)
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
 
@@ -23,13 +24,14 @@ def main():
     #single_img = "test_img/pepper.ppm"
     im = Image.open(single_img)
     prediction = nn.predict_image(im)
-    print(prediction)
+    # print(prediction)
 
     # get img data from webcam
     cv2.namedWindow("preview")
     vc = cv2.VideoCapture(0)
     vc.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
     vc.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
     if vc.isOpened():  # try to get the first frame
         rval, frame = vc.read()
     else:
@@ -43,8 +45,8 @@ def main():
 
         # process camera img
         # resize
-        # new_resize_dim = (160, 160)
-        # img_bgr = cv2.resize(img_bgr, new_resize_dim, interpolation=cv2.INTER_AREA)
+        new_resize_dim = (160, 160)
+        img_bgr = cv2.resize(img_bgr, new_resize_dim, interpolation=cv2.INTER_AREA)
 
         # write img to disk for debugging
         # cv2.imwrite("cv2.jpg", img_bgr)
@@ -55,7 +57,7 @@ def main():
         im_rgb = Image.merge("RGB", (B, G, R))
 
         # write img to disk for debugging
-        im_rgb.save("PIL_input_rgb.jpg")
+        # im_rgb.save("PIL_input_rgb.jpg")
 
         x = nn.predict_image(im_rgb)
         # print(x)

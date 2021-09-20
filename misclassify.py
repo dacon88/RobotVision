@@ -88,7 +88,8 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
 
 
 def main():
-    nn = AlexnetFinetune()
+    img_size = 160  # px
+    nn = AlexnetFinetune(img_size)
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
     nn.get_classes_names_from_csv("classes_names.csv")
