@@ -1,20 +1,13 @@
-# ================================================================== #
-#                        Adversarial Example                         #
-# ================================================================== #
-
-from decimal import Decimal
 from PIL import Image
-import numpy as np
 import torch
 from torchvision import transforms
-from matplotlib import pyplot as plt
 
 
 from alexnet_finetune import AlexnetFinetune
 
 transform = transforms.Compose([
-    #transforms.Resize(160),
-    #transforms.CenterCrop(160),
+    transforms.Resize(160),
+    transforms.CenterCrop(160),
     transforms.ToTensor()
 ])
 
@@ -114,15 +107,15 @@ def main():
 
     loss = torch.nn.CrossEntropyLoss()
 
-    target_label = torch.LongTensor([1])
+    target_label = torch.LongTensor([7])  # index of correct prediction
     x_adv = perturb_iterative(x=input_batch, y=target_label, model=nn.model,
-                              nb_iter=20, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
+                              nb_iter=50, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
                               transform=normalize,
                               inverse_transform=inv_normalize,
                               clip_min=0.0,
                               clip_max=1.0)
 
-    adv_img = transforms.ToPILImage()(x_adv[0])  #
+    adv_img = transforms.ToPILImage()(x_adv[0])
     adv_img.show()
 
     prediction = nn.predict_image(adv_img)
