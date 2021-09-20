@@ -48,10 +48,10 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
     """
 
     x_adv = x.clone()
-    if torch.cuda.is_available():
-        x_adv = x_adv.to('cuda')
-        y = y.to('cuda')
-        model = model.to('cuda')
+    # if torch.cuda.is_available():
+    #     x_adv = x_adv.to('cuda')
+    #     y = y.to('cuda')
+    #     model = model.to('cuda')
 
     # track gradients on delta
     x_adv.requires_grad = True
@@ -59,6 +59,7 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
     x_input_space = batch_transform(x, inverse_transform)  # x0
 
     for ii in range(nb_iter):
+        model.to('cpu')
         outputs = model(x_adv)
         loss = loss_fn(outputs, y)
         loss.backward()
@@ -75,7 +76,7 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
         if l2(x_adv_input_space - x_input_space) > eps:
             delta = x_adv_input_space.data - x_input_space.data
             delta = delta / l2(delta)
-            x_adv_input_space.data = x_input_space.data + delta.data
+            x_adv_input_space.data = x_input_space.data + eps*delta.data
         # project x_adv back onto feature/normalized space
         x_adv.data = batch_transform(x_adv_input_space, transform)
         # ----------------------------------------------------------------
@@ -89,13 +90,13 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
 
 def main():
     img_size = 160  # px
-    nn = AlexnetFinetune(img_size)
+    nn = AlexnetFinetune(img_size, "infer")
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # not perturbed img classification
-    single_img = "test_img/pepper.ppm"
+    single_img = "lemon.ppm"
     im = Image.open(single_img)
     im.show()
     prediction = nn.predict_image(im)
@@ -117,8 +118,12 @@ def main():
                               clip_max=1.0)
 
     adv_img = transforms.ToPILImage()(x_adv[0])
+    #original_img = transforms.PILToTensor()(im)
     adv_img.show()
 
+    #perturbation = x_adv[0] - original_img
+    #perturbation = transforms.ToPILImage()(perturbation)
+    #perturbation.show()
     prediction = nn.predict_image(adv_img)
     print(prediction)
 
