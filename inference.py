@@ -19,7 +19,8 @@ def main():
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # predict single img
-    single_img = "test_img/pepper.ppm"
+    single_img = "potato.jpg"
+    #single_img = "test_img/pepper.ppm"
     im = Image.open(single_img)
     prediction = nn.predict_image(im)
     print(prediction)
