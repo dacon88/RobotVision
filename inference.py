@@ -13,14 +13,14 @@ def main():
 
     print("Load model")
     img_size = 160
-    nn = AlexnetFinetune(img_size)
+    nn = AlexnetFinetune(img_size, "infer")
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
     nn.model.eval()
 
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # predict single img
-    single_img = "potato.jpg"
+    single_img = "lemon.ppm"
     #single_img = "test_img/pepper.ppm"
     im = Image.open(single_img)
     prediction = nn.predict_image(im)

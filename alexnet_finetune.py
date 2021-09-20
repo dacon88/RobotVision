@@ -17,17 +17,21 @@ from torchvision import datasets, transforms
 
 class AlexnetFinetune:
 
-    def __init__(self, img_size):
+    def __init__(self, img_size, mode="train"):
 
         # Number of classes in the dataset.
         # it corresponds to num of output of last layer
         self.num_classes = 10
 
-        self.model = torchvision.models.alexnet(pretrained=False, num_classes=self.num_classes)
+        if mode == "train":
+            self.model = torchvision.models.alexnet(pretrained=True) # , num_classes=self.num_classes)
+            num_ftrs = self.model.classifier[6].in_features
+            self.model.classifier[6] = nn.Linear(num_ftrs, self.num_classes)
+        elif mode == "infer":
+            self.model = torchvision.models.alexnet(num_classes=self.num_classes)
 
         self.fine_tuned = False
 
-        # TODO: inspect what input size does. it should be the size of the data
         self.input_size = int(img_size * 0.7)
 
         # Data augmentation and normalization for training
@@ -53,7 +57,6 @@ class AlexnetFinetune:
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
-
         image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_dir, x), self.data_transforms[x]) for x in
                           ['train', 'val']}
         # Create training and validation dataloaders
@@ -64,7 +67,7 @@ class AlexnetFinetune:
         # Detect if we have a GPU available
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        # Send the model to GPU
+        # Send the model to the device available
         self.model = self.model.to(device)
 
         # Gather the parameters to be optimized/updated in this run.
@@ -85,6 +88,7 @@ class AlexnetFinetune:
 
         since = time.time()
 
+        # best weights are now the pretrained ones
         best_model_wts = copy.deepcopy(self.model.state_dict())
         best_acc = 0.0
 
@@ -107,7 +111,7 @@ class AlexnetFinetune:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
 
-                    # zero the parameter gradients
+                    # zero the parameter gradients at every iteration
                     optimizer_ft.zero_grad()
 
                     # forward
@@ -122,8 +126,8 @@ class AlexnetFinetune:
 
                         # backward + optimize only if in training phase
                         if phase == 'train':
-                            loss.backward()
-                            optimizer_ft.step()
+                            loss.backward()      # gradient of loss
+                            optimizer_ft.step()  # update weights
 
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
@@ -140,8 +144,10 @@ class AlexnetFinetune:
                     best_model_wts = copy.deepcopy(self.model.state_dict())
                 if phase == 'val':
                     val_acc_history.append(epoch_acc)
+            # stop training loop
 
             print()
+        # stop epochs
 
         time_elapsed = time.time() - since
         print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))

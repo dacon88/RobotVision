@@ -12,7 +12,7 @@ def main():
 
     # Top level data directory. Here we assume the format of the directory conforms
     #   to the ImageFolder structure
-    dataset_dir = "/Users/davide/Documents/laurea_magistrale/second_semester_first_year/machine_learning/ML_project/iCubWorld"
+    dataset_dir = "/home/davide/university/iCubWorld"
 
     # img size, assume img has dimensions: img_size * img_size
     img_size = 160
@@ -21,10 +21,10 @@ def main():
     batch_size = 8
 
     # Number of epochs to train for
-    num_epochs = 15
+    num_epochs = 50
 
     # Initialize network
-    alexnet_ft = AlexnetFinetune(img_size)
+    alexnet_ft = AlexnetFinetune(img_size, "train")
 
     alexnet_ft.train_model(dataset_dir, batch_size, num_epochs)
     alexnet_ft.save_nn_state(state_file_name)
