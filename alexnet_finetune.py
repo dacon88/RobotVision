@@ -52,7 +52,6 @@ class AlexnetFinetune:
     def train_model(self, dataset_dir, batch_size, num_epochs, feature_extract, is_inception=False):
         print("Initializing Datasets and Dataloaders...")
 
-        # TODO: split train in train and val and use test for tests. is it really necessary?
         # Create training and validation datasets
 
         image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_dir, x), self.data_transforms[x]) for x in
