@@ -2,28 +2,29 @@
 #                        Adversarial Example                         #
 # ================================================================== #
 
-def predict(model, x, labels):
-    with torch.no_grad():
-        output = model(x)  # 1000 values (predictions on 1,000 classes)
-
-    # softmax will rescale outputs so that the sum is 1 and we
-    # can use them as probability scores
-    scores = torch.softmax(output, dim=1)
-
-    # take top k predictions - accuracy is usually measured with top-5
-    _, preds = output.topk(k=5, dim=1)
-
-    # use the output as index for the labels list
-    for label in preds[0]:
-        predicted_label = labels[label.item()]
-        score = scores[0, label.item()].item()
-        print("ID: {:3d} Label: {:25s} Score: {:.2f}"
-              "".format(label.item(), predicted_label, Decimal(score)))
+from decimal import Decimal
+from PIL import Image
+import numpy as np
+import torch
+from torchvision import transforms
+from matplotlib import pyplot as plt
 
 
-predict(model, input_batch, labels)
-imshow(input_batch[0])
+from alexnet_finetune import AlexnetFinetune
 
+transform = transforms.Compose([
+    #transforms.Resize(160),
+    #transforms.CenterCrop(160),
+    transforms.ToTensor()
+])
+
+normalize = transforms.Normalize(
+    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
+# we need this later for bringing the image back to input space
+inv_normalize = transforms.Normalize(
+    mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
+    std=[1 / 0.229, 1 / 0.224, 1 / 0.225])
 
 def batch_transform(batch, transform):
     return transform(batch.squeeze()).unsqueeze(0)
@@ -33,8 +34,7 @@ def l2(x):
     return x.view(x.shape[0], -1).norm(p=2, dim=1)
 
 
-def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn,
-                      transform, inverse_transform,
+def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, inverse_transform,
                       clip_min=0.0, clip_max=1.0):
     """
     Iteratively maximize the loss over the input.
@@ -94,14 +94,40 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn,
     return x_adv.detach()
 
 
-loss = torch.nn.CrossEntropyLoss()
-target_label = torch.LongTensor([402])
-x_adv = perturb_iterative(x=input_batch, y=target_label, model=model,
-                          nb_iter=500, eps=5, eta=0.03, loss_fn=loss,
-                          transform=normalize,
-                          inverse_transform=inv_normalize,
-                          clip_min=0.0,
-                          clip_max=1.0)
+def main():
+    nn = AlexnetFinetune()
+    nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
+    nn.model.eval()
+    nn.get_classes_names_from_csv("classes_names.csv")
 
-predict(model, x_adv, labels)
-imshow(x_adv[0])
+    # not perturbed img classification
+    single_img = "test_img/pepper.ppm"
+    im = Image.open(single_img)
+    im.show()
+    prediction = nn.predict_image(im)
+    print(prediction)
+
+    # apply transform from torchvision
+    input_tensor = normalize(transform(im))
+    # create a mini-batch as expected by the model
+    input_batch = input_tensor.unsqueeze(0)
+
+    loss = torch.nn.CrossEntropyLoss()
+
+    target_label = torch.LongTensor([1])
+    x_adv = perturb_iterative(x=input_batch, y=target_label, model=nn.model,
+                              nb_iter=20, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
+                              transform=normalize,
+                              inverse_transform=inv_normalize,
+                              clip_min=0.0,
+                              clip_max=1.0)
+
+    adv_img = transforms.ToPILImage()(x_adv[0])  #
+    adv_img.show()
+
+    prediction = nn.predict_image(adv_img)
+    print(prediction)
+
+
+if __name__ == "__main__":
+    main()
