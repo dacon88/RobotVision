@@ -14,6 +14,7 @@ import torch.optim as optim
 import torchvision
 from torchvision import datasets, transforms
 
+# TODO: add docstrings to the functions
 
 class AlexnetFinetune:
 
@@ -177,8 +178,7 @@ class AlexnetFinetune:
         print("Network weights saved in: {0}".format(state_path))
 
     def predict_image(self, image):
-
-        start_time = time.time()
+        # start_time = time.time()
 
         transformation = self.data_transforms["val"]
 
@@ -189,7 +189,7 @@ class AlexnetFinetune:
             image_tensor = image_tensor.to('cuda')
             self.model.to('cuda')
 
-        #print(classes)
+        # print(classes)
 
         with torch.no_grad():
             output = self.model(image_tensor)
@@ -205,7 +205,7 @@ class AlexnetFinetune:
         index = probabilities.argmax()
         prob_percentage = round((probabilities[index]*100.), 4)
         message = self.classes_names[0][index] + " " + str(prob_percentage) + " %"
-        #print(message)
+        # print(message)
 
         # print("--- %s seconds ---" % (time.time() - start_time))
 

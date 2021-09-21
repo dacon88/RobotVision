@@ -22,9 +22,9 @@ def main():
 
     # predict single img as smoke test
     # single_img = "lemon.ppm"
-    #single_img = "test_img/pepper.ppm"
+    # single_img = "test_img/pepper.ppm"
     # im = Image.open(single_img)
-    # prediction = nn.predict_image(im)
+    # prediction = nn.predict_image(im)
     # print(prediction)
 
     # get img data from webcam
@@ -43,7 +43,7 @@ def main():
     # Predict on the fly images
     while rval:
 
-        start_time = time.time()
+        # start_time = time.time()
 
         img_bgr = frame
 
