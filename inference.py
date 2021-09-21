@@ -63,7 +63,8 @@ def main():
         # write img to disk for debugging
         # im_rgb.save("PIL_input_rgb.jpg")
 
-        x = nn.predict_image(im_rgb)
+        x, predictions = nn.predict_image(im_rgb)
+        print(predictions)
         # print(x)
         response = x
 

@@ -209,4 +209,8 @@ class AlexnetFinetune:
 
         # print("--- %s seconds ---" % (time.time() - start_time))
 
-        return message
+        zip_iterator = zip(self.classes_names[0], [round(num, 2) for num in probabilities])
+        predictions_dict = dict(zip_iterator)
+        predictions_dict = dict(sorted(predictions_dict.items(), key=lambda item: item[1]))
+
+        return message, predictions_dict

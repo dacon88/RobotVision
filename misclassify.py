@@ -99,7 +99,7 @@ def main():
     single_img = "pepper.ppm"
     im = Image.open(single_img)
     im.show()
-    prediction = nn.predict_image(im)
+    prediction, _ = nn.predict_image(im)
     print(prediction)
 
     # apply transform from torchvision
@@ -124,7 +124,7 @@ def main():
 
     adv_img = transforms.ToPILImage()(x_adv[0])
     adv_img.show()
-    prediction = nn.predict_image(adv_img)
+    prediction, _ = nn.predict_image(adv_img)
     print(prediction)
 
     #original_img = transforms.PILToTensor()(im)
