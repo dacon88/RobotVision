@@ -17,6 +17,7 @@ For the project development pytorch and ML course notebooks have been used as in
 Many thanks to professor Battista Biggio for the support
 
 **Installation**
+
 clone repo: git clone https://github.com/dacon88/RobotVision.git
 
 install required packages:
