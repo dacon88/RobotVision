@@ -6,7 +6,7 @@ from torchvision import transforms
 from alexnet_finetune import AlexnetFinetune
 
 transform = transforms.Compose([
-    transforms.Resize(160),
+    #transforms.Resize(160),
     transforms.CenterCrop(160),
     transforms.ToTensor()
 ])
@@ -48,10 +48,10 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
     """
 
     x_adv = x.clone()
-    # if torch.cuda.is_available():
-    #     x_adv = x_adv.to('cuda')
-    #     y = y.to('cuda')
-    #     model = model.to('cuda')
+    if torch.cuda.is_available():
+        x_adv = x_adv.to('cuda')
+        y = y.to('cuda')
+        model = model.to('cuda')
 
     # track gradients on delta
     x_adv.requires_grad = True
@@ -59,7 +59,7 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
     x_input_space = batch_transform(x, inverse_transform)  # x0
 
     for ii in range(nb_iter):
-        model.to('cpu')
+        # model.to('cpu')
         outputs = model(x_adv)
         loss = loss_fn(outputs, y)
         loss.backward()
@@ -76,7 +76,7 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
         if l2(x_adv_input_space - x_input_space) > eps:
             delta = x_adv_input_space.data - x_input_space.data
             delta = delta / l2(delta)
-            x_adv_input_space.data = x_input_space.data + eps*delta.data
+            x_adv_input_space.data = x_input_space.data + delta.data
         # project x_adv back onto feature/normalized space
         x_adv.data = batch_transform(x_adv_input_space, transform)
         # ----------------------------------------------------------------
@@ -96,36 +96,46 @@ def main():
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # not perturbed img classification
-    single_img = "lemon.ppm"
+    single_img = "pepper.ppm"
     im = Image.open(single_img)
     im.show()
     prediction = nn.predict_image(im)
     print(prediction)
 
     # apply transform from torchvision
-    input_tensor = normalize(transform(im))
+    #input_tensor = normalize(transform(im))
+    #input_tensor = inv_normalize(transform(im))
+
+    input_tensor = transform(im)
+
     # create a mini-batch as expected by the model
     input_batch = input_tensor.unsqueeze(0)
 
     loss = torch.nn.CrossEntropyLoss()
 
-    target_label = torch.LongTensor([7])  # index of correct prediction
+    target_label = torch.LongTensor([5])  # index of correct prediction
+    #print("shape: ", input_batch.size())
     x_adv = perturb_iterative(x=input_batch, y=target_label, model=nn.model,
-                              nb_iter=50, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
+                              nb_iter=50, eps=5, eta=0.3, loss_fn=loss,  #nb_iter = 500
                               transform=normalize,
                               inverse_transform=inv_normalize,
                               clip_min=0.0,
                               clip_max=1.0)
 
     adv_img = transforms.ToPILImage()(x_adv[0])
-    #original_img = transforms.PILToTensor()(im)
     adv_img.show()
-
-    #perturbation = x_adv[0] - original_img
-    #perturbation = transforms.ToPILImage()(perturbation)
-    #perturbation.show()
     prediction = nn.predict_image(adv_img)
     print(prediction)
+
+    #original_img = transforms.PILToTensor()(im)
+    #original_img = transform(i)
+    perturbation = x_adv[0] - input_tensor
+    perturbation_img = transforms.ToPILImage()(perturbation)
+    perturbation_img.show()
+
+    original_back = x_adv[0] - perturbation
+    original_back = transforms.ToPILImage()(original_back)
+    original_back.show()
 
 
 if __name__ == "__main__":
