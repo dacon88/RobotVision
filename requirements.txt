@@ -1,0 +1,5 @@
+# NOTE: pytorch is required as package but its version depends on the HW spec
+# For further info visit: https://pytorch.org
+
+Pillow
+opencv-python

@@ -15,3 +15,18 @@ For the project development pytorch and ML course notebooks have been used as in
 * https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html
 
 Many thanks to professor Battista Biggio for the support
+
+Installation.
+clone repo: git clone https://github.com/dacon88/RobotVision.git
+
+install required packages:
+* pytorch
+* pip3 install -r requirements.txt
+
+Usage.
+
+run first training script:
+python3 <path>/RobotVision/training.py
+
+Then run inference script:
+python3 <path>/RobotVision/training.py
