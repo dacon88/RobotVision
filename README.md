@@ -30,4 +30,4 @@ run first training script:
 * _python3 path_to_repo/RobotVision/training.py_
 
 Then run inference script:
-* _python3 path_to_repo/RobotVision/training.py_
+* _python3 path_to_repo/RobotVision/inference.py_
