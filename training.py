@@ -21,7 +21,7 @@ def main():
     batch_size = 8
 
     # Number of epochs to train for
-    num_epochs = 50
+    num_epochs = 3
 
     # Initialize network
     alexnet_ft = AlexnetFinetune(img_size, "train")

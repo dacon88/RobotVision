@@ -41,12 +41,13 @@ class AlexnetFinetune:
             'train': transforms.Compose([
                 transforms.RandomResizedCrop(self.input_size),
                 transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ]),
             'val': transforms.Compose([
-                transforms.Resize(self.input_size),
-                transforms.CenterCrop(self.input_size),
+                transforms.Resize(img_size),
+                transforms.CenterCrop(img_size),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ]),
