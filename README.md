@@ -1,8 +1,8 @@
 # RobotVision
 
-Author: Davide Congiu
+**Author**: Davide Congiu
 
-Project Valid for Machine Learning course 2020/2021
+**Project Valid for Machine Learning course 2020/2021**
 
 RobotVision implements classifier based on fine-tuning of AlexNet crafted on iCubWorld dataset.
 
@@ -16,17 +16,18 @@ For the project development pytorch and ML course notebooks have been used as in
 
 Many thanks to professor Battista Biggio for the support
 
-Installation.
+**Installation**
 clone repo: git clone https://github.com/dacon88/RobotVision.git
 
 install required packages:
-* pytorch
-* pip3 install -r requirements.txt
+* _pytorch_
+* _pip3 install -r requirements.txt_
 
-Usage.
+
+**Usage**
 
 run first training script:
-python3 <path>/RobotVision/training.py
+* _python3 path_to_repo/RobotVision/training.py_
 
 Then run inference script:
-python3 <path>/RobotVision/training.py
+* _python3 path_to_repo/RobotVision/training.py_
