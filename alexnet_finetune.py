@@ -178,6 +178,8 @@ class AlexnetFinetune:
 
     def predict_image(self, image):
 
+        start_time = time.time()
+
         transformation = self.data_transforms["val"]
 
         image_tensor = transformation(image)
@@ -204,5 +206,7 @@ class AlexnetFinetune:
         prob_percentage = round((probabilities[index]*100.), 4)
         message = self.classes_names[0][index] + " " + str(prob_percentage) + " %"
         #print(message)
+
+        # print("--- %s seconds ---" % (time.time() - start_time))
 
         return message

@@ -6,6 +6,7 @@ import torch
 from alexnet_finetune import AlexnetFinetune
 from PIL import Image
 import cv2
+import time
 
 
 def main():
@@ -19,11 +20,11 @@ def main():
 
     nn.get_classes_names_from_csv("classes_names.csv")
 
-    # predict single img
-    single_img = "lemon.ppm"
+    # predict single img as smoke test
+    # single_img = "lemon.ppm"
     #single_img = "test_img/pepper.ppm"
-    im = Image.open(single_img)
-    prediction = nn.predict_image(im)
+    # im = Image.open(single_img)
+    # prediction = nn.predict_image(im)
     # print(prediction)
 
     # get img data from webcam
@@ -41,6 +42,9 @@ def main():
 
     # Predict on the fly images
     while rval:
+
+        start_time = time.time()
+
         img_bgr = frame
 
         # process camera img
@@ -67,7 +71,10 @@ def main():
         cv2.putText(frame, response, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), lineType=cv2.LINE_AA)
         cv2.imshow("preview", frame)
         rval, frame = vc.read()
-        key = cv2.waitKey(20)
+
+        # print("--- %s seconds ---" % (time.time() - start_time))
+
+        key = cv2.waitKey(150)  # 20 ms frame
         if key == 27:  # exit on ESC
             break
     cv2.destroyWindow("preview")
