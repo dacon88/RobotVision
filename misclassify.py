@@ -1,3 +1,9 @@
+"""
+misclassify runs AlexeNet finetuned network on a perturbed image
+Function which perturbes the input image comes from ML course github:
+
+https://github.com/unica-ml/ml/blob/master/notebooks/lab06.ipynb
+"""
 from PIL import Image
 import torch
 from torchvision import transforms
@@ -6,7 +12,7 @@ from torchvision import transforms
 from alexnet_finetune import AlexnetFinetune
 
 transform = transforms.Compose([
-    #transforms.Resize(160),
+    # transforms.Resize(160),
     transforms.CenterCrop(160),
     transforms.ToTensor()
 ])
@@ -18,6 +24,7 @@ normalize = transforms.Normalize(
 inv_normalize = transforms.Normalize(
     mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
     std=[1 / 0.229, 1 / 0.224, 1 / 0.225])
+
 
 def batch_transform(batch, transform):
     return transform(batch.squeeze()).unsqueeze(0)
@@ -89,6 +96,8 @@ def perturb_iterative(x, y, model, nb_iter, eps, eta, loss_fn, transform, invers
 
 
 def main():
+
+    # setup of network
     img_size = 160  # px
     nn = AlexnetFinetune(img_size, "infer")
     nn.model.load_state_dict(torch.load("state_dict_model.pt", map_location=torch.device('cpu')))
@@ -96,15 +105,11 @@ def main():
     nn.get_classes_names_from_csv("classes_names.csv")
 
     # not perturbed img classification
-    single_img = "pepper.ppm"
+    single_img = "test_img_banana.jpg"
     im = Image.open(single_img)
     im.show()
     prediction, _ = nn.predict_image(im)
     print(prediction)
-
-    # apply transform from torchvision
-    #input_tensor = normalize(transform(im))
-    #input_tensor = inv_normalize(transform(im))
 
     input_tensor = transform(im)
 
@@ -114,28 +119,29 @@ def main():
     loss = torch.nn.CrossEntropyLoss()
 
     target_label = torch.LongTensor([5])  # index of correct prediction
-    #print("shape: ", input_batch.size())
+
     x_adv = perturb_iterative(x=input_batch, y=target_label, model=nn.model,
-                              nb_iter=50, eps=5, eta=0.3, loss_fn=loss,  #nb_iter = 500
+                              nb_iter=500, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
                               transform=normalize,
                               inverse_transform=inv_normalize,
                               clip_min=0.0,
                               clip_max=1.0)
 
+    # processing adv_img for display and prediction
     adv_img = transforms.ToPILImage()(x_adv[0])
     adv_img.show()
     prediction, _ = nn.predict_image(adv_img)
     print(prediction)
 
-    #original_img = transforms.PILToTensor()(im)
-    #original_img = transform(i)
+    # perturbation display
     perturbation = x_adv[0] - input_tensor
     perturbation_img = transforms.ToPILImage()(perturbation)
     perturbation_img.show()
 
-    original_back = x_adv[0] - perturbation
-    original_back = transforms.ToPILImage()(original_back)
-    original_back.show()
+    # display of perturbation + adv_img to prove the image is back to original
+    # original_back = x_adv[0] - perturbation
+    # original_back = transforms.ToPILImage()(original_back)
+    # original_back.show()
 
 
 if __name__ == "__main__":
