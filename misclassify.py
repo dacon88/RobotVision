@@ -118,10 +118,14 @@ def main():
 
     loss = torch.nn.CrossEntropyLoss()
 
-    target_label = torch.LongTensor([5])  # index of correct prediction
+    # index of wrong prediction.
+    # this is used to minimize the loss on that particular class.
+    # So it can be used to generate the noise to add to the image.
+
+    target_label = torch.LongTensor([7])  # peppers class
 
     x_adv = perturb_iterative(x=input_batch, y=target_label, model=nn.model,
-                              nb_iter=500, eps=5, eta=0.03, loss_fn=loss,  #nb_iter = 500
+                              nb_iter=500, eps=5, eta=0.3, loss_fn=loss,  #nb_iter = 500
                               transform=normalize,
                               inverse_transform=inv_normalize,
                               clip_min=0.0,
