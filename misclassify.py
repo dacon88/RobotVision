@@ -12,7 +12,7 @@ from torchvision import transforms
 from alexnet_finetune import AlexnetFinetune
 
 transform = transforms.Compose([
-    # transforms.Resize(160),
+    transforms.Resize(160),
     transforms.CenterCrop(160),
     transforms.ToTensor()
 ])
